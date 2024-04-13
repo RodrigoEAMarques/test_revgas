@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Bancos por ID de Compensação</title>
+    <style>
+        #resultado {
+            margin-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Consulta de Bancos por ID de Compensação</h1>
+
+    <!-- Formulário para busca por ID de compensação -->
+    <form id="consultaForm">
+        <label for="idCompensacao">ID de Compensação:</label>
+        <input type="text" id="idCompensacao" name="idCompensacao">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <!-- Tabela para exibir os resultados da consulta -->
+    <div id="resultado"></div>
+
+    <script>
+        document.getElementById('consultaForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o formulário de ser submetido
+    
+            // Obtém o valor do campo de entrada para o ID de compensação
+            var idCompensacao = document.getElementById('idCompensacao').value;
+    
+            // Limpa o conteúdo anterior
+            document.getElementById('resultado').innerHTML = '';
+    
+            // Constrói a URL da API com base no ID de compensação fornecido
+            var url = 'http://127.0.0.1:8000/api/banks/' + idCompensacao;
+    
+            // Faz uma requisição GET para a API
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ocorreu um erro ao consultar os bancos.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Verifica se há dados retornados
+                    if (Object.keys(data).length === 0) {
+                        throw new Error('Nenhum banco encontrado com o ID de compensação fornecido.');
+                    }
+    
+                    // Cria a tabela para exibir os resultados
+                    var resultadoDiv = document.getElementById('resultado');
+                    var table = document.createElement('table');
+                    var headerRow = table.insertRow(0);
+                    var header1 = document.createElement('th');
+                    var header2 = document.createElement('th');
+                    header1.textContent = 'Nome da Instituição';
+                    header2.textContent = 'Código de Compensação';
+                    headerRow.appendChild(header1);
+                    headerRow.appendChild(header2);
+    
+                    // Preenche a tabela com os dados do banco
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    cell1.textContent = data.nome_instituicao;
+                    cell2.textContent = data.id_compensacao;
+    
+                    // Adiciona a tabela à div de resultado
+                    resultadoDiv.appendChild(table);
+                })
+                .catch(error => {
+                    // Exibe uma mensagem de erro caso ocorra algum problema na requisição
+                    var resultadoDiv = document.getElementById('resultado');
+                    resultadoDiv.innerHTML = `<p>${error.message}</p>`;
+                });
+        });
+    </script>
+</body>
+</html>
